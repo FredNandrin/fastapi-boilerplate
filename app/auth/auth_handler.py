@@ -3,11 +3,15 @@ from typing import Dict
 
 import jwt
 from decouple import config
+from fastapi import Depends
+
 
 
 JWT_SECRET = config("secret")
 JWT_ALGORITHM = config("algorithm")
 
+def jwt_config(key):
+        return  config(key);
 
 def token_response(token: str):
     return {
@@ -17,7 +21,7 @@ def token_response(token: str):
 def sign_jwt(user_id: str) -> Dict[str, str]:
     payload = {
         "user_id": user_id,
-        "expires": time.time() + 600
+        "expires": time.time() + 6000
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 

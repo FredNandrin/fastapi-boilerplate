@@ -2,8 +2,16 @@ from fastapi import FastAPI, Body, Depends
 
 from app.auth.auth_bearer import JWTBearer
 from app.auth.auth_handler import sign_jwt
-from app.model import PostSchema, UserSchema, UserLoginSchema
+from app.models.post import PostSchema
+from app.models.user import UserSchema, UserLoginSchema
 from passlib.hash import pbkdf2_sha256
+from app.routes.user import router as UserRouter
+
+from app.database.user import add_user
+from fastapi.encoders import jsonable_encoder
+import logging
+from app.database.user import retrieve_user
+from bson import ObjectId
 
 posts = [
     {
@@ -13,34 +21,15 @@ posts = [
     }
 ]
 
-users = []
 
 app = FastAPI()
 
-def check_user(data: UserLoginSchema):
-    for user in users:
-        if user.email == data.email:
-            return pbkdf2_sha256.verify(data.password, user.password)
-    return False
+app.include_router(UserRouter, tags=["User"], prefix="/user")
+
 
 @app.get("/", tags=["root"])
 async def read_root() -> dict:
     return {"message": "Welcome to your blog!"}
-
-
-@app.post("/user/signup", tags=["user"])
-async def create_user(user: UserSchema = Body(...)):
-    user.password = pbkdf2_sha256.hash(user.password)
-    users.append(user) # replace with db call, making sure to hash the password first
-    return sign_jwt(user.email)
-
-@app.post("/user/login", tags=["user"])
-async def user_login(user: UserLoginSchema = Body(...)):
-    if check_user(user):
-        return sign_jwt(user.email)
-    return {
-        "error": "Wrong login details!"
-    }
 
 @app.get("/posts", tags=["posts"])
 async def get_posts() -> dict:
@@ -59,18 +48,9 @@ async def get_single_post(id: int) -> dict:
             return {
                 "data": post
             }
-@app.post("/posts", tags=["posts"])
-async def add_post(post: PostSchema) -> dict:
-    post.id = len(posts) + 1
-    posts.append(post.dict())
-    return {
-        "data": "post added."
-    }
 
 @app.post("/posts", dependencies=[Depends(JWTBearer())], tags=["posts"])
 async def add_post(post: PostSchema) -> dict:
     post.id = len(posts) + 1
-    posts.append(post.dict())
-    return {
-        "data": "post added."
-    }
+    posts.append(post.model_dump())
+    return post.model_dump()
