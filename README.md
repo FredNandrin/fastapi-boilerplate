@@ -15,3 +15,8 @@ Run server
 ```
 python main.py
 ```
+
+Build and run docker instance
+```
+docker compose up --build
+```
