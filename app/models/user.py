@@ -1,37 +1,40 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr,ConfigDict
 
 
 class UserLoginSchema(BaseModel):
-    email: EmailStr = Field(primary_key=True, example="fred@test.be", description="User\'s Email (must be unique)")
-    password: str = Field(..., example="weakpassword")
-
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {
+            "primary_key":True,
             "example": {
                 "email": "email@example.com",
                 "password": "weakpassword"
             }
         }
+    )
+    email: EmailStr = Field( examples=["fred@test.be"], description="User\'s Email (must be unique)")
+    password: str = Field(..., examples=["weakpassword"])
+
+   
+    
 
 class UserSchema(UserLoginSchema):
-    fullname: str = Field(..., example="Full Name")
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra = {
             "example": {
                 "fullname": "Full Name",
                 "email": "email@example.com",
                 "password": "weakpassword"
             }
         }
+    )
+    fullname: str = Field(..., examples=["Full Name"])
 
 class UserUpdateSchema(BaseModel):
-    fullname: str = Field(..., example="Full Name")
-    password: str = Field(..., example="newpassword")
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(json_schema_extra = {
             "example": {
                 "fullname": "Full Name",
                 "password": "newpassword"
             }
-        }
+        }) 
+    fullname: str = Field(..., examples=["Full Name"])
+    password: str = Field(..., examples=["newpassword"])
+        

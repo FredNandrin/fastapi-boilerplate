@@ -9,13 +9,8 @@ from app.models.response import ErrorResponseModel, ResponseModel
 from app.auth.auth_bearer import JWTBearer
 from bson.objectid import ObjectId
 from app.auth.auth_bearer import get_current_user
-
-
-
-
-
-
 import logging
+from pymongo.errors import DuplicateKeyError
 
 from app.database.user import (
     add_user,
@@ -34,7 +29,7 @@ from app.models.user import (
 )
 
 
-router = APIRouter()
+router = APIRouter( tags=["User"], prefix="/user")
 
 async def check_user(data: UserLoginSchema):
     try:
@@ -54,11 +49,10 @@ async def create_user(user: UserSchema = Body(...)):
 
     try:
         new_user = await add_user(jsonable_encoder(user))
-    except Exception as e:
+    except DuplicateKeyError as e:
         if e.code == 11000:
             raise HTTPException(status_code=409, detail="User with this email already exists.")
-        logging.critical(e)
-        raise HTTPException(status_code=400, detail="Unknown error occurred.", headers={"X-error-code": f"{e.code}"})
+        raise HTTPException(status_code=400, detail=e.detail, headers={"X-error-code": f"{type(e)}"})
     return sign_jwt(user.email)
 
 @router.post("/login")

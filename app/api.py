@@ -6,12 +6,14 @@ from app.models.post import PostSchema
 from app.models.user import UserSchema, UserLoginSchema
 from passlib.hash import pbkdf2_sha256
 from app.routes.user import router as UserRouter
+from app.routes.health import router as HealthRouter
 
 from app.database.user import add_user
 from fastapi.encoders import jsonable_encoder
 import logging
 from app.database.user import retrieve_user
 from bson import ObjectId
+
 
 posts = [
     {
@@ -24,12 +26,11 @@ posts = [
 
 app = FastAPI()
 
-app.include_router(UserRouter, tags=["User"], prefix="/user")
+app.include_router(UserRouter)
+app.include_router(HealthRouter)
 
 
-@app.get("/", tags=["root"])
-async def read_root() -> dict:
-    return {"message": "Welcome to your blog!"}
+
 
 @app.get("/posts", tags=["posts"])
 async def get_posts() -> dict:
