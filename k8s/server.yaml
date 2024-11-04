@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: python-api
+  name: python-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: python-api
+  template:
+    metadata:
+      labels:
+        app: python-api
+    spec:
+      containers:
+        - env:
+            - name: ME_CONFIG_MONGODB_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: database_url
+            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: mongo-secret
+            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: username
+                  name: mongo-secret
+            - name: ME_CONFIG_BASICAUTH_USERNAME
+              value:
+            - name: ME_CONFIG_BASICAUTH_PASSWORD
+              value: password
+          #            - name: ME_CONFIG_MONGODB_URL
+          #              value: mongodb://root:password@mongo:27017/
+          image: server
+          name: python-api
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-api
+spec:
+  selector:
+    app: python-api
+  type: LoadBalancer
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30000
