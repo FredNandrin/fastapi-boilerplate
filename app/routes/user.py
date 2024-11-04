@@ -31,17 +31,15 @@ from app.models.user import (
 
 router = APIRouter( tags=["User"], prefix="/user")
 
-async def check_user(data: UserLoginSchema):
+async def check_user(data: UserLoginSchema) -> bool:
     try:
-        user = await retrieve_user(data.email)
+        user = retrieve_user(data.email)
         if user["email"] == data.email:
             return pbkdf2_sha256.verify(data.password, user['password'])
     except HTTPException as e:
         if e.status_code == 404:
-            raise HTTPException(status_code=401, detail="Unauthorized : bad credentials") #, headers={"X-error-code": f"Wrong login details!"})
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Unauthorized : bad credentials" ) #, headers={"X-error-code": f"Wrong password!"})
-
+            raise HTTPException(status_code=401, detail="Unauthorized 1 : bad credentials")
+    return False
 
 @router.post("/signup", responses={409: {"description": "User already exists", "model":ErrorResponseModel}})
 async def create_user(user: UserSchema = Body(...)):
@@ -57,8 +55,12 @@ async def create_user(user: UserSchema = Body(...)):
 
 @router.post("/login")
 async def user_login(user: UserLoginSchema = Body(...)):
-    if await check_user(user):
-        return sign_jwt(user.email)
+    try:
+        if await check_user(user):
+            return sign_jwt(user.email)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Unauthorized : bad credentials" , headers={"X-error-code": f"${e.args}"})
+    raise HTTPException(status_code=401, detail="Unauthorized : bad credentials" , headers={"X-error-code": f"Wrong login details!"})
 
 @router.post("/update", dependencies=[Depends(JWTBearer())])
 async def user_update(current_user: Annotated[UserSchema, Depends(get_current_user)], user: UserUpdateSchema = Body(...)):
