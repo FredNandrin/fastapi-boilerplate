@@ -37,7 +37,7 @@ spec:
               value: password
           #            - name: ME_CONFIG_MONGODB_URL
           #              value: mongodb://root:password@mongo:27017/
-          image: server
+          image: ghcr.io/frednandrin/fastapi-boilerplate:latest
           name: python-api
           ports:
             - containerPort: 8080
