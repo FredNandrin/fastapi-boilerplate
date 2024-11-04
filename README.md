@@ -32,3 +32,25 @@ pytest
 # or
 ptw
 ```
+
+
+# On Kubectl : 
+
+```
+kubectl apply -f mongo.yaml,mongo-express.yaml,server.yaml
+minikube service python-api
+minikube service mongo-express
+
+
+```
+# Locally
+Launchh all services with docker :
+```
+docker compose up --build -d
+```
+
+When developping :
+```
+docker compose down server
+python main.py
+```
