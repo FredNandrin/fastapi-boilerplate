@@ -5,7 +5,7 @@ metadata:
     app: python-api
   name: python-api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: python-api
@@ -16,28 +16,31 @@ spec:
     spec:
       containers:
         - env:
-            - name: ME_CONFIG_MONGODB_SERVER
+            - name: secret
+              value: examplesecret
+            - name: algorithm
+              value: HS256
+            - name: MONGODB_SERVER
               valueFrom:
                 configMapKeyRef:
                   name: mongo-configmap
                   key: database_url
-            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+            - name: MONGODB_SERVERPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: mongo-configmap
+                  key: database_port
+            - name: MONGODB_ADMINPASSWORD
               valueFrom:
                 secretKeyRef:
                   key: password
                   name: mongo-secret
-            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+            - name: MONGODB_ADMINUSERNAME
               valueFrom:
                 secretKeyRef:
                   key: username
                   name: mongo-secret
-            - name: ME_CONFIG_BASICAUTH_USERNAME
-              value:
-            - name: ME_CONFIG_BASICAUTH_PASSWORD
-              value: password
-          #            - name: ME_CONFIG_MONGODB_URL
-          #              value: mongodb://root:password@mongo:27017/
-          image: ghcr.io/frednandrin/fastapi-boilerplate:latest
+          image: ghcr.io/frednandrin/fastapi-boilerplate:main
           name: python-api
           ports:
             - containerPort: 8080
@@ -49,6 +52,8 @@ spec:
             requests:
               memory: "256Mi"
               cpu: "250m"
+      imagePullSecrets:
+        - name: ghcr
       restartPolicy: Always
 ---
 apiVersion: v1
