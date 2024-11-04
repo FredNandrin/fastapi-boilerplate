@@ -20,12 +20,12 @@ spec:
               value: examplesecret
             - name: algorithm
               value: HS256
-            - name: MONGODB_SERVER
+            - name: MONGO_DATABASE
               valueFrom:
                 configMapKeyRef:
                   name: mongo-configmap
                   key: database_url
-            - name: MONGODB_SERVERPORT
+            - name: MONGO_DATABASE_PORT
               valueFrom:
                 configMapKeyRef:
                   name: mongo-configmap

@@ -17,10 +17,11 @@ services:
     environment:
       - secret=examplesecret
       - algorithm=HS256
-      - MONGO_DATABASE=localhost:27017
+      - MONGO_DATABASE=localhost
+      - MONGO_DATABASE_PORT=27017
       - MONGODB_ADMINUSERNAME=root
       - MONGODB_ADMINPASSWORD=password
-      
+
   mongo:
     image: mongo
     restart: always

@@ -53,3 +53,4 @@ metadata:
   name: mongo-configmap
 data:
   database_url: mongo-service
+  database_port: "27017"
